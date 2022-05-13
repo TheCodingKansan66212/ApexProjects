@@ -1,0 +1,5 @@
+trigger CalculateHash on Contact (after insert) {
+
+	ContactPopulator.populateIdHash(); //this trigger runs the Apex class and the method with in it, after data insert.
+          
+}
