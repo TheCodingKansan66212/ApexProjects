@@ -1,0 +1,36 @@
+public class ContactPopulator {
+ public static void populateIdHash(){
+  
+     //pulls data from Contact object.
+     List<Contact> contactList = [SELECT Id, Secured_ID__c FROM Contact WHERE Id IN :trigger.new];
+     	if(contactList != null){
+        	System.debug(contactList);
+     	} //this checks for whether there's data in the entire contact list.
+     
+     String IdHash;
+     String IdField; //these lines create the variables used to hash the contact ID and store the data.
+     Blob hashedBlob;
+     Blob requestBlob;
+     String result;
+     
+     //this loop iterates through the data pulled from Contact object, and translates it into an MD5 hash.
+     for(Contact a : contactList){
+     	IdHash = string.valueOf(system.hashCode(a.Id));
+        IdField = string.valueOf(a.Id);
+        requestBlob = Blob.valueOf(IdField);
+		hashedBlob = Crypto.generateDigest('MD5', requestBlob);
+		System.debug(EncodingUtil.base64Encode(hashedBlob));
+		result = EncodingUtil.convertToHex(hashedBlob);
+        a.Secured_ID__c = result;
+         
+        try{ //error catch statement notifies user that the ID failed to hash after updating Contact.
+        	UPDATE contactList;
+     	}catch(DmlException e){
+        	System.debug('MD5 update failed');
+    	}
+        
+     } 
+     
+ } 
+
+}
